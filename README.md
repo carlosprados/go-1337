@@ -15,7 +15,7 @@ A simple command-line tool written in Go that can convert text to and from `1337
 To build the project, first ensure you have Go installed. Then, run the following command:
 
 ```bash
-go build -o leet_converter leet_converter.go
+go build -o leet_converter main.go
 ```
 
 This command will generate an executable binary named `leet_converter` in your current directory.
