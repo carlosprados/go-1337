@@ -1,80 +1,160 @@
-# Leet Translator CLI
+# leet — 1337 speak converter
 
-A simple command-line tool written in Go that can convert text to and from `1337` (leet) speak. This project provides a way to have fun with text transformations, translating normal text into `1337` or converting `1337` text back to readable form.
+[![Go](https://github.com/carlosprados/go-1337/actions/workflows/go.yml/badge.svg)](https://github.com/carlosprados/go-1337/actions/workflows/go.yml)
+[![Release](https://img.shields.io/github/v/release/carlosprados/go-1337)](https://github.com/carlosprados/go-1337/releases)
+[![Go Reference](https://pkg.go.dev/badge/github.com/carlosprados/go-1337.svg)](https://pkg.go.dev/github.com/carlosprados/go-1337)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Features
+Convert text to `1337` speak and back: from the command line, in pipes, in a live
+terminal editor, or **[in the browser](https://carlosprados.github.io/go-1337/)**.
 
-- Convert any text to `1337` speak using a simple command.
-- Convert `1337` speak back to normal text.
-- Designed with an extensible character mapping that allows multiple characters for a single letter.
+![demo](docs/demo.gif)
+
+## Install
+
+### Download a binary
+
+Each link always points to the latest release:
+
+| OS | x86-64 | ARM64 |
+|---|---|---|
+| Linux | [leet_linux_amd64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_linux_amd64.tar.gz) | [leet_linux_arm64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_linux_arm64.tar.gz) |
+| macOS | [leet_darwin_amd64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_darwin_amd64.tar.gz) | [leet_darwin_arm64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_darwin_arm64.tar.gz) (Apple Silicon) |
+| Windows | [leet_windows_amd64.zip](https://github.com/carlosprados/go-1337/releases/latest/download/leet_windows_amd64.zip) | [leet_windows_arm64.zip](https://github.com/carlosprados/go-1337/releases/latest/download/leet_windows_arm64.zip) |
+
+Or in one line on Linux and macOS, installing to `~/.local/bin`:
+
+```bash
+os=$(uname -s | tr A-Z a-z); arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+curl -sL "https://github.com/carlosprados/go-1337/releases/latest/download/leet_${os}_${arch}.tar.gz" \
+  | tar -xz -C ~/.local/bin leet
+```
+
+`checksums.txt` on the [releases page](https://github.com/carlosprados/go-1337/releases) has the SHA-256 of every archive.
+On macOS, a browser download is quarantined: run `xattr -d com.apple.quarantine leet` once, or use Homebrew.
+
+### Package managers
+
+```bash
+# Homebrew (macOS, Linux)
+brew install --cask carlosprados/tap/leet
+
+# Go
+go install github.com/carlosprados/go-1337/cmd/leet@latest
+```
+
+Archives include shell completions; `leet completion --help` generates them too.
 
 ## Usage
 
-### Building the Project
+| Command | Aliases | What it does |
+|---|---|---|
+| `leet` | | Live editor (when run in a terminal with no arguments) |
+| `leet encode [text...]` | `to`, `to1337` | Plain text → 1337 |
+| `leet decode [text...]` | `from`, `from1337` | 1337 → plain text |
+| `leet detect [text...]` | `score` | How much of a text is 1337, and its decoded form |
+| `leet table` | `map`, `alphabet` | Every letter, its level, primary variant and alternatives |
+| `leet tui` | `live`, `play` | Live editor, explicitly |
+| `leet completion <shell>` | | Completion script for bash, zsh, fish, powershell |
 
-To build the project, first ensure you have Go installed. Then, run the following command:
+Every command explains itself: `leet --help`, `leet <command> --help`.
 
-```bash
-go build -o leet_converter main.go
-```
-
-This command will generate an executable binary named `leet_converter` in your current directory.
-
-### Running the Program
-
-The program offers two main functions: converting text to `1337` speak and converting `1337` back to normal text.
-
-To convert text to `1337` speak, use the `-to1337` flag:
-
-```bash
-./leet_converter -to1337
-```
-
-To convert `1337` speak back to normal text, use the `-from1337` flag:
+Text comes from the arguments or, with none, from standard input line by line. Only the
+converted text goes to stdout, so `leet` composes in pipes:
 
 ```bash
-./leet_converter -from1337
+$ leet encode Hack the planet
+#4<|< 7#3 |*14|\|37
+
+$ leet encode --level basic Hack the planet
+H4ck 7h3 p14n37
+
+$ leet encode --random --seed 42 Hello      # --seed makes random output reproducible
+|-|&11[]
+
+$ leet encode 'leet speak' | leet decode
+leet speak
+
+$ leet detect 'h4ck th3 p14n37'
+score    46% (mostly 1337)
+decoded  hack the planet
+
+$ leet encode -c "goes to the clipboard too"
 ```
 
-After running the command, the program will prompt you to enter the text to be converted.
+Quote leet input in the shell: many sequences contain `\ | < > * $`.
 
-## Example
+### Levels
+
+| Level | Converts |
+|---|---|
+| `basic` | `a e l o s t` — the classic `1337` letters |
+| `advanced` | basic + `b c g h i k z` |
+| `elite` (default) | the whole alphabet |
+
+Each letter has a **primary** variant, used by default, and alternatives that `--random`
+picks from. `leet table` shows them all.
+
+### Live editor
+
+Run `leet` in a terminal. It converts as you type: side by side on wide terminals, stacked on narrow ones.
+
+| Key | Action |
+|---|---|
+| `tab` | switch encode / decode |
+| `ctrl+l` | cycle level |
+| `ctrl+r` | toggle random variants |
+| `ctrl+s` | reshuffle random variants |
+| `ctrl+y` | copy output to the clipboard |
+| `esc` | quit |
+
+### Custom alphabet
+
+Override any letter with a YAML file, passed with `--map` or picked up automatically from
+`~/.config/leet/map.yaml` (`$XDG_CONFIG_HOME/leet/map.yaml`):
+
+```yaml
+a: "@"            # a single variant
+e: ["3", "&"]     # primary first, then alternatives for --random
+```
+
+Variants must not contain letters or spaces. That rule keeps plain words intact when
+decoding: a variant like `ph` would turn "phone" into "fone".
+
+## How decoding works, and its limits
+
+Decoding scans the input with longest-match-first over every variant of every letter. It is
+deterministic and reads any level or random output. On a tie, the primary variant wins.
+
+- **Primaries round-trip**: `decode(encode(x))` gives back `x` in lowercase, as long as `x`
+  contains no characters that are themselves variants.
+- **Symbols and digits in plain text are read as leet**: `Hi!` decodes as `hii`, `4` as `a`.
+  `1` is the primary of `l`, so it decodes as `l` even when it stood for an `i`.
+- **Random output may be ambiguous**: alternatives can combine into another letter's
+  sequence (`lu` → `|_|_|` → `uj`).
+- Case is not recovered.
+
+## Web demo
+
+`web/` is a [Hugo](https://gohugo.io) + [VanJS](https://vanjs.org) + Tailwind page that runs
+the same Go converter compiled to WebAssembly (`cmd/wasm`). GitHub Pages publishes it on
+every push to `main`.
+
+## Development
+
+Recipes live in the [`justfile`](justfile):
 
 ```bash
-$ ./leet_converter -to1337
-Enter text:
-Hello World
-1337 Text: #3110 /\/0r1d
+just build          # ./leet with the git version stamped in
+just check          # gofmt, go vet, go test -race
+just web            # web demo with live reload (needs Hugo extended and npm)
+just demo           # re-record docs/demo.gif (needs vhs >= 0.12.1, ttyd, ffmpeg)
+just release-check  # validate .goreleaser.yaml and build a local snapshot into dist/
 ```
 
-```bash
-$ ./leet_converter -from1337
-Enter text:
-#3110 /\/0r1d
-Normal Text: hello world
-```
-
-## Dependencies
-
-This project has no external dependencies beyond the Go standard library. Ensure you have Go installed to compile and run the program.
-
-## Modifying the Leet Mapping
-
-The `leetMapping` variable can be modified to include additional mappings or change existing ones. Each character is mapped to its corresponding `1337` representation. To modify the mapping, edit the `leetMapping` in `leet_converter.go` as follows:
-
-```go
-var leetMapping = map[string]string{
-    "a": "4", "b": "8", // Add or modify mappings here
-    // ...
-}
-```
-
-The program also has a reverse mapping (`reverseLeetMapping`) that is dynamically generated, allowing conversions from `1337` back to normal text.
-
-## Contribution
-
-Feel free to contribute to this project by opening issues or submitting pull requests. Suggestions for expanding the `leet` character mappings are welcome!
+Releases: push a `vX.Y.Z` tag and GoReleaser publishes binaries and checksums, plus the
+Homebrew cask once the tap token is configured.
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+MIT. See [LICENSE](LICENSE).

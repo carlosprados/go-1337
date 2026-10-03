@@ -1,0 +1,57 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - sh -c 'mkdir -p completions && for s in bash zsh fish; do go run ./cmd/leet completion $s > completions/leet.$s; done'
+
+builds:
+  - id: leet
+    main: ./cmd/leet
+    binary: leet
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X github.com/carlosprados/go-1337/internal/cli.version={{ .Version }}
+
+archives:
+  # No version in the name: releases/latest/download/<name> stays a stable link.
+  - name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files: [README.md, LICENSE, completions/*]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github
+  filters:
+    exclude: ["^docs:", "^test:", "^chore:"]
+
+# Needs a carlosprados/homebrew-tap repository and a token with write access
+# to it in HOMEBREW_TAP_GITHUB_TOKEN; without the token the tap is skipped.
+homebrew_casks:
+  - name: leet
+    repository:
+      owner: carlosprados
+      name: homebrew-tap
+      token: '{{ index .Env "HOMEBREW_TAP_GITHUB_TOKEN" }}'
+    skip_upload: '{{ if index .Env "HOMEBREW_TAP_GITHUB_TOKEN" }}false{{ else }}true{{ end }}'
+    homepage: https://github.com/carlosprados/go-1337
+    description: Convert text to and from 1337 (leet) speak, with a live terminal editor
+    license: MIT
+    completions:
+      bash: completions/leet.bash
+      zsh: completions/leet.zsh
+      fish: completions/leet.fish
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/leet"]
+          end

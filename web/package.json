@@ -1,0 +1,13 @@
+{
+  "name": "go-1337-web",
+  "private": true,
+  "description": "Web demo of go-1337: Hugo + VanJS + Tailwind, conversion in Go/WASM",
+  "dependencies": {
+    "vanjs-core": "^1.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.9.0"
+  }
+}
