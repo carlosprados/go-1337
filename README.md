@@ -12,6 +12,29 @@ terminal editor, or **[in the browser](https://carlosprados.github.io/go-1337/)*
 
 ## Install
 
+### Download a binary
+
+Each link always points to the latest release:
+
+| OS | x86-64 | ARM64 |
+|---|---|---|
+| Linux | [leet_linux_amd64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_linux_amd64.tar.gz) | [leet_linux_arm64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_linux_arm64.tar.gz) |
+| macOS | [leet_darwin_amd64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_darwin_amd64.tar.gz) | [leet_darwin_arm64.tar.gz](https://github.com/carlosprados/go-1337/releases/latest/download/leet_darwin_arm64.tar.gz) (Apple Silicon) |
+| Windows | [leet_windows_amd64.zip](https://github.com/carlosprados/go-1337/releases/latest/download/leet_windows_amd64.zip) | [leet_windows_arm64.zip](https://github.com/carlosprados/go-1337/releases/latest/download/leet_windows_arm64.zip) |
+
+Or in one line on Linux and macOS, installing to `~/.local/bin`:
+
+```bash
+os=$(uname -s | tr A-Z a-z); arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+curl -sL "https://github.com/carlosprados/go-1337/releases/latest/download/leet_${os}_${arch}.tar.gz" \
+  | tar -xz -C ~/.local/bin leet
+```
+
+`checksums.txt` on the [releases page](https://github.com/carlosprados/go-1337/releases) has the SHA-256 of every archive.
+On macOS, a browser download is quarantined: run `xattr -d com.apple.quarantine leet` once, or use Homebrew.
+
+### Package managers
+
 ```bash
 # Homebrew (macOS, Linux)
 brew install --cask carlosprados/tap/leet
@@ -20,7 +43,6 @@ brew install --cask carlosprados/tap/leet
 go install github.com/carlosprados/go-1337/cmd/leet@latest
 ```
 
-Or grab a binary for Linux, macOS or Windows from the [releases page](https://github.com/carlosprados/go-1337/releases).
 Archives include shell completions; `leet completion --help` generates them too.
 
 ## Usage

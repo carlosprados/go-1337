@@ -17,7 +17,9 @@ builds:
       - -s -w -X github.com/carlosprados/go-1337/internal/cli.version={{ .Version }}
 
 archives:
-  - formats: [tar.gz]
+  # No version in the name: releases/latest/download/<name> stays a stable link.
+  - name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
     format_overrides:
       - goos: windows
         formats: [zip]
