@@ -1,0 +1,6 @@
+baseURL = "http://localhost:1313/"
+title = "1337 converter"
+disableKinds = ["taxonomy", "term", "section", "page", "rss", "sitemap", "404"]
+
+[params]
+repo = "https://github.com/carlosprados/go-1337"

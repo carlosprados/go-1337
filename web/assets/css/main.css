@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@source "layouts";
+@source "assets/ts";
+
+@theme {
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-leet: #3ddc84;
+}
+
+/* Ligatures would render sequences like "<|<" as arrows: show every glyph. */
+body {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}

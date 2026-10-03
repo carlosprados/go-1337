@@ -22,6 +22,12 @@ go.work
 go.work.sum
 leet_converter
 /leet
+/web/static/leet.wasm
+/web/static/wasm_exec.js
+/web/public/
+/web/resources/
+/web/node_modules/
+/web/.hugo_build.lock
 
 # env file
 .env

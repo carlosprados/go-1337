@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" class="bg-neutral-950">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ site.Title }}</title>
+  <meta name="description" content="Convert text to and from 1337 speak, live in your browser. Go compiled to WebAssembly.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233ddc84'/><text x='16' y='22' font-family='monospace' font-weight='700' font-size='13' text-anchor='middle' fill='%230a0a0a'>1337</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap">
+  {{ with resources.Get "css/main.css" | css.TailwindCSS (dict "minify" hugo.IsProduction) }}
+    <link rel="stylesheet" href="{{ (. | fingerprint).RelPermalink }}">
+  {{ end }}
+</head>
+<body class="min-h-screen bg-neutral-950 font-mono text-neutral-200">
+  <main id="app" class="mx-auto max-w-5xl px-4 py-10"
+        data-wasm="{{ "leet.wasm" | relURL }}" data-repo="{{ site.Params.repo }}"></main>
+  <script src="{{ "wasm_exec.js" | relURL }}"></script>
+  {{ with resources.Get "ts/main.ts" | js.Build (dict "minify" hugo.IsProduction "target" "es2020") }}
+    <script type="module" src="{{ (. | fingerprint).RelPermalink }}"></script>
+  {{ end }}
+</body>
+</html>
