@@ -22,6 +22,8 @@ go.work
 go.work.sum
 leet_converter
 /leet
+/dist/
+/completions/
 /web/static/leet.wasm
 /web/static/wasm_exec.js
 /web/public/
