@@ -31,15 +31,11 @@ curl -sL "https://github.com/carlosprados/go-1337/releases/latest/download/leet_
 ```
 
 `checksums.txt` on the [releases page](https://github.com/carlosprados/go-1337/releases) has the SHA-256 of every archive.
-On macOS, a browser download is quarantined: run `xattr -d com.apple.quarantine leet` once, or use Homebrew.
+On macOS, a browser download is quarantined: run `xattr -d com.apple.quarantine leet` once.
 
-### Package managers
+### With Go
 
 ```bash
-# Homebrew (macOS, Linux)
-brew install --cask carlosprados/tap/leet
-
-# Go
 go install github.com/carlosprados/go-1337/cmd/leet@latest
 ```
 
@@ -152,8 +148,7 @@ just demo           # re-record docs/demo.gif (needs vhs >= 0.12.1, ttyd, ffmpeg
 just release-check  # validate .goreleaser.yaml and build a local snapshot into dist/
 ```
 
-Releases: push a `vX.Y.Z` tag and GoReleaser publishes binaries and checksums, plus the
-Homebrew cask once the tap token is configured.
+Releases: push a `vX.Y.Z` tag and GoReleaser publishes binaries and checksums.
 
 ## License
 

@@ -29,7 +29,7 @@ Version is injected into `github.com/carlosprados/go-1337/internal/cli.version`.
 - `internal/tui` — Bubble Tea model. Random mode uses a fixed `seed` per render so output is stable while typing; `ctrl+s` bumps the seed. Panel sizes are inner sizes; the border adds 2 to each dimension.
 - `cmd/leet` — the binary's `main`. `cmd/wasm` — `js && wasm` build exposing a global `leet` object (`encode(text, level, seed)`, `decode`, `detect`) and firing a `leet-ready` event.
 - `web/` — Hugo site: `layouts/home.html`, `assets/ts/main.ts` (VanJS, bundled by Hugo `js.Build`), `assets/css/main.css` (Tailwind v4 via `css.TailwindCSS`, `@source` covers `layouts` and `assets/ts`). `web/static/leet.wasm` and `wasm_exec.js` are build outputs (gitignored), copied from `$(go env GOROOT)/lib/wasm/`.
-- Releases: `.goreleaser.yaml` (binaries, completions, Homebrew cask that is skipped without `HOMEBREW_TAP_GITHUB_TOKEN`). Workflows: `go.yml` (checks), `release.yml` (on `v*` tags), `pages.yml` (web demo to GitHub Pages).
+- Releases: `.goreleaser.yaml` (binaries for 6 platforms with shell completions, version-less archive names so `releases/latest/download/...` links stay stable; no Homebrew, on purpose). Workflows: `go.yml` (checks), `release.yml` (on `v*` tags), `pages.yml` (web demo to GitHub Pages).
 
 ## Invariants — tests enforce them
 
