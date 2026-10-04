@@ -32,26 +32,3 @@ changelog:
   use: github
   filters:
     exclude: ["^docs:", "^test:", "^chore:"]
-
-# Needs a carlosprados/homebrew-tap repository and a token with write access
-# to it in HOMEBREW_TAP_GITHUB_TOKEN; without the token the tap is skipped.
-homebrew_casks:
-  - name: leet
-    repository:
-      owner: carlosprados
-      name: homebrew-tap
-      token: '{{ index .Env "HOMEBREW_TAP_GITHUB_TOKEN" }}'
-    skip_upload: '{{ if index .Env "HOMEBREW_TAP_GITHUB_TOKEN" }}false{{ else }}true{{ end }}'
-    homepage: https://github.com/carlosprados/go-1337
-    description: Convert text to and from 1337 (leet) speak, with a live terminal editor
-    license: MIT
-    completions:
-      bash: completions/leet.bash
-      zsh: completions/leet.zsh
-      fish: completions/leet.fish
-    hooks:
-      post:
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/leet"]
-          end
