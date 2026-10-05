@@ -177,10 +177,11 @@ func convert(cmd *cobra.Command, args []string, o outputFlags, fn func(string) s
 	return nil
 }
 
-// About 0.7 s per line.
-const (
-	animFrames = 24
-	animDelay  = 30 * time.Millisecond
+const animFPS = 30
+
+var (
+	animFrames = int(anim.Duration.Seconds() * animFPS)
+	animDelay  = time.Second / animFPS
 )
 
 // animatable reports whether line can be redrawn in place on w: w must be a

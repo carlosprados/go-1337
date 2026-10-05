@@ -6,13 +6,24 @@
 // requestAnimationFrame in the browser.
 package anim
 
-import "unicode"
+import (
+	"time"
+	"unicode"
+)
 
 const glyphs = `!#$%&*+<>?@[]{}|/\^~=_()0123456789`
 
-// Duration-independent scramble rate: glyphs change this many times over a
-// full animation.
-const changes = 24
+// Duration is how long the effect lasts, the same in every front end.
+const Duration = 2 * time.Second
+
+const (
+	// changes is how many times the scrambled glyphs change over a full
+	// animation: about 20 per second.
+	changes = 40
+	// scrambleOnly is the opening share of the animation where nothing locks
+	// yet, so the scramble reads before the text resolves.
+	scrambleOnly = 0.25
+)
 
 // Cell is one rune of a frame.
 type Cell struct {
@@ -47,12 +58,12 @@ func Frame(target string, progress float64, seed uint64) string {
 	return string(out)
 }
 
-// lockAt is when rune i settles: a left-to-right sweep over the first 70% of
-// the animation, plus up to 30% of jitter so it does not look mechanical.
+// lockAt is when rune i settles: after the scramble-only opening, a
+// left-to-right sweep with up to 30% of jitter so it does not look mechanical.
 func lockAt(i, n int, seed uint64) float64 {
 	pos := float64(i) / float64(max(n, 1))
 	jitter := float64(mix(seed^uint64(i)*0x94d049bb133111eb)%1000) / 1000
-	return 0.7*pos + 0.3*jitter
+	return scrambleOnly + (1-scrambleOnly)*(0.7*pos+0.3*jitter)
 }
 
 // mix is splitmix64's finaliser: a cheap, well-distributed hash.

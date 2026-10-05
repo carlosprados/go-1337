@@ -33,7 +33,7 @@ Enter
 Sleep 1.5s
 Type `leet decode --animate '|*455\/\/0|2|) 4<<3|*73|), \/\/3|_<0/\/\3 84<|<'`
 Enter
-Sleep 1.8s
+Sleep 3s
 Type "leet share 'meet me at the usual place'"
 Enter
 Sleep 2s
@@ -44,16 +44,12 @@ Sleep 1s
 Type@70ms "Hello World"
 Sleep 1s
 Ctrl+L
-Sleep 1s
-Ctrl+L
-Sleep 0.8s
+Sleep 2.4s
 Ctrl+R
-Sleep 1.2s
+Sleep 2.4s
 Ctrl+S
-Sleep 1s
-Ctrl+S
-Sleep 1s
+Sleep 2.4s
 Tab
-Sleep 1.5s
+Sleep 2.4s
 Escape
 Sleep 0.5s

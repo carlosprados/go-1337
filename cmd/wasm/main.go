@@ -5,8 +5,8 @@
 //	GOOS=js GOARCH=wasm go build -o web/static/leet.wasm ./cmd/wasm
 //
 // It registers a global "leet" object with encode(text, level, seed),
-// decode(text), detect(text) and frame(text, progress, seed). A seed of 0
-// means primary variants only.
+// decode(text), detect(text), frame(text, progress, seed) and durationMs,
+// the animation length. A seed of 0 means primary variants only.
 package main
 
 import (
@@ -38,6 +38,7 @@ func main() {
 			s := a.Detect(args[0].String())
 			return map[string]any{"ratio": s.Ratio, "verdict": s.Verdict(), "decoded": s.Decoded}
 		}),
+		"durationMs": anim.Duration.Milliseconds(),
 		"frame": js.FuncOf(func(_ js.Value, args []js.Value) any {
 			return anim.Frame(args[0].String(), args[1].Float(), uint64(args[2].Int()))
 		}),

@@ -66,8 +66,6 @@ type (
 	animTickMsg    struct{}
 )
 
-const animDuration = 600 * time.Millisecond
-
 func animTick() tea.Cmd {
 	return tea.Tick(time.Second/30, func(time.Time) tea.Msg { return animTickMsg{} })
 }
@@ -84,7 +82,7 @@ func (m Model) animProgress() float64 {
 	if m.animStart.IsZero() {
 		return 1
 	}
-	return min(float64(time.Since(m.animStart))/float64(animDuration), 1)
+	return min(float64(time.Since(m.animStart))/float64(anim.Duration), 1)
 }
 
 // New builds the editor model.
