@@ -3,6 +3,7 @@ package tui
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/carlosprados/go-1337/internal/leet"
 	tea "github.com/charmbracelet/bubbletea"
@@ -56,5 +57,28 @@ func TestRandomIsStableUntilReshuffle(t *testing.T) {
 	m = press(m, tea.KeyMsg{Type: tea.KeyCtrlS})
 	if m.Output() == first {
 		t.Error("reshuffle kept the same output") // 3^12 combinations: a collision is not realistic
+	}
+}
+
+func TestTogglesPlayTheAnimation(t *testing.T) {
+	m := New(leet.Default(), nil)
+	m = press(m, tea.WindowSizeMsg{Width: 160, Height: 30}, typed("the quick brown fox jumps over the lazy dog"))
+	next, cmd := m.Update(tea.KeyMsg{Type: tea.KeyCtrlL})
+	m = next.(Model)
+	if cmd == nil || m.animProgress() >= 1 {
+		t.Fatal("ctrl+l did not start the animation")
+	}
+	if strings.Contains(m.View(), m.Output()) {
+		t.Error("view shows the final output while animating")
+	}
+
+	m.animStart = time.Now().Add(-time.Second) // let it finish
+	next, cmd = m.Update(animTickMsg{})
+	m = next.(Model)
+	if cmd != nil || m.animProgress() != 1 {
+		t.Error("animation did not stop after its duration")
+	}
+	if !strings.Contains(m.View(), m.Output()) {
+		t.Error("view lacks the final output after the animation")
 	}
 }

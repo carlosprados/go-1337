@@ -30,6 +30,12 @@ Enter
 Sleep 1.2s
 Type "leet detect 'h4ck th3 p14n37'"
 Enter
+Sleep 1.5s
+Type `leet decode --animate '|*455\/\/0|2|) 4<<3|*73|), \/\/3|_<0/\/\3 84<|<'`
+Enter
+Sleep 1.8s
+Type "leet share 'meet me at the usual place'"
+Enter
 Sleep 2s
 
 Type "clear && leet"

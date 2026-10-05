@@ -5,13 +5,15 @@
 //	GOOS=js GOARCH=wasm go build -o web/static/leet.wasm ./cmd/wasm
 //
 // It registers a global "leet" object with encode(text, level, seed),
-// decode(text) and detect(text). A seed of 0 means primary variants only.
+// decode(text), detect(text) and frame(text, progress, seed). A seed of 0
+// means primary variants only.
 package main
 
 import (
 	"math/rand/v2"
 	"syscall/js"
 
+	"github.com/carlosprados/go-1337/internal/anim"
 	"github.com/carlosprados/go-1337/internal/leet"
 )
 
@@ -35,6 +37,9 @@ func main() {
 		"detect": js.FuncOf(func(_ js.Value, args []js.Value) any {
 			s := a.Detect(args[0].String())
 			return map[string]any{"ratio": s.Ratio, "verdict": s.Verdict(), "decoded": s.Decoded}
+		}),
+		"frame": js.FuncOf(func(_ js.Value, args []js.Value) any {
+			return anim.Frame(args[0].String(), args[1].Float(), uint64(args[2].Int()))
 		}),
 		"levels": js.FuncOf(func(js.Value, []js.Value) any {
 			out := make([]any, 0, 3)

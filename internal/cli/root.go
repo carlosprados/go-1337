@@ -40,6 +40,8 @@ read from --map or, if it exists, from ` + defaultMapPathHint() + `:
   leet encode --level basic --random "Hello World"
   echo "Hello World" | leet encode | leet decode
   leet detect 'h4ck th3 p14n37'
+  leet decode --animate '|*455\/\/0|2|) 4<<3|*73|)'
+  leet share "meet me at the usual place"
   leet table`,
 		Version:      version,
 		SilenceUsage: true,
@@ -52,7 +54,7 @@ read from --map or, if it exists, from ` + defaultMapPathHint() + `:
 		},
 	}
 	root.PersistentFlags().StringVarP(&mapPath, "map", "m", "", "YAML file with a custom alphabet (default "+defaultMapPathHint()+" if present)")
-	root.AddCommand(newEncodeCmd(), newDecodeCmd(), newDetectCmd(), newTableCmd(), newTUICmd())
+	root.AddCommand(newEncodeCmd(), newDecodeCmd(), newDetectCmd(), newTableCmd(), newTUICmd(), newShareCmd())
 	return root
 }
 
