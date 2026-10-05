@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"time"
 
+	"github.com/carlosprados/go-1337/internal/anim"
 	"github.com/carlosprados/go-1337/internal/leet"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -55,9 +56,36 @@ type Model struct {
 	status   string
 	width    int
 	height   int
+
+	animStart time.Time // zero when no animation is running
+	animSeed  uint64
 }
 
-type clearStatusMsg struct{}
+type (
+	clearStatusMsg struct{}
+	animTickMsg    struct{}
+)
+
+const animDuration = 600 * time.Millisecond
+
+func animTick() tea.Cmd {
+	return tea.Tick(time.Second/30, func(time.Time) tea.Msg { return animTickMsg{} })
+}
+
+// startAnim replays the decrypting effect on the output panel.
+func (m *Model) startAnim() tea.Cmd {
+	m.animStart = time.Now()
+	m.animSeed++
+	return animTick()
+}
+
+// animProgress is 1 when idle, otherwise how far the animation has run.
+func (m Model) animProgress() float64 {
+	if m.animStart.IsZero() {
+		return 1
+	}
+	return min(float64(time.Since(m.animStart))/float64(animDuration), 1)
+}
 
 // New builds the editor model.
 func New(a *leet.Alphabet, copyFn CopyFunc) Model {
@@ -93,22 +121,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case clearStatusMsg:
 		m.status = ""
 		return m, nil
+	case animTickMsg:
+		if m.animProgress() < 1 {
+			return m, animTick()
+		}
+		m.animStart = time.Time{}
+		return m, nil
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, keys.Mode):
 			m.decode = !m.decode
-			return m, nil
+			return m, m.startAnim()
 		case key.Matches(msg, keys.Level):
 			m.level = (m.level + 1) % (leet.Elite + 1)
-			return m, nil
+			return m, m.startAnim()
 		case key.Matches(msg, keys.Random):
 			m.random = !m.random
-			return m, nil
+			return m, m.startAnim()
 		case key.Matches(msg, keys.Shuffle):
 			m.seed++
-			return m, nil
+			return m, m.startAnim()
 		case key.Matches(msg, keys.Copy):
 			m.status = "copied to clipboard"
 			if err := m.copyFn(m.Output()); err != nil {
@@ -187,10 +221,15 @@ func (m Model) View() string {
 		statusOf.Render(m.status),
 	)
 
+	output := m.Output()
+	if p := m.animProgress(); p < 1 {
+		output = anim.Frame(output, p, m.animSeed)
+	}
+
 	w, h := m.panelWidth(), m.panelHeight()
 	in := active.Width(w).Height(h).Render(titleOf.Render(inTitle) + "\n" + m.input.View())
 	out := panel.Width(w).Height(h).Render(titleOf.Render(outTitle) + "\n" +
-		outStyle.Width(w-2).MaxHeight(h-1).Render(m.Output()))
+		outStyle.Width(w-2).MaxHeight(h-1).Render(output))
 
 	var body string
 	if m.sideBySide() {

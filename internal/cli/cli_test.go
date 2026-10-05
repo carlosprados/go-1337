@@ -36,6 +36,9 @@ func TestCommands(t *testing.T) {
 		{"decode", "", []string{"decode", "#3110"}, "hello\n"},
 		{"decode stdin", "#!\n", []string{"from"}, "hi\n"},
 		{"detect", "", []string{"detect", "h4<|<"}, "score    75% (mostly 1337)\ndecoded  hack\n"},
+		{"animate is ignored off a terminal", "", []string{"encode", "-a", "hi"}, "#!\n"},
+		{"share", "", []string{"share", "hi there"}, "https://carlosprados.github.io/go-1337/#d=%23%21+7%233%7C23\n"},
+		{"share stdin", "hi\n", []string{"share"}, "https://carlosprados.github.io/go-1337/#d=%23%21\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -85,5 +88,16 @@ func TestErrors(t *testing.T) {
 		if _, err := run(t, "", args...); err == nil {
 			t.Errorf("%s: expected an error", name)
 		}
+	}
+}
+
+func TestAnimateLine(t *testing.T) {
+	var buf bytes.Buffer
+	if err := animateLine(&buf, "#3110", 3, 0); err != nil {
+		t.Fatal(err)
+	}
+	got := buf.String()
+	if strings.Count(got, "\r") != 4 || !strings.HasSuffix(got, "\r#3110\x1b[K\n") {
+		t.Errorf("unexpected frames: %q", got)
 	}
 }

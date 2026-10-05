@@ -7,6 +7,7 @@ type LeetAPI = {
   encode(text: string, level: string, seed: number): string;
   decode(text: string): string;
   detect(text: string): Detect;
+  frame(text: string, progress: number, seed: number): string;
 };
 declare const Go: new () => { importObject: WebAssembly.Imports; run(i: WebAssembly.Instance): Promise<void> };
 declare global {
@@ -24,6 +25,10 @@ const level = van.state<string>("elite");
 const random = van.state(false);
 const seed = van.state(1 + Math.floor(Math.random() * 2 ** 31));
 const copied = van.state(false);
+const shared = van.state("");
+const progress = van.state(1); // decrypting animation: 1 = idle
+let animSeed = 0;
+let animFrame = 0;
 
 const output = van.derive(() => {
   if (!ready.val) return failed.val || "loading WebAssembly...";
@@ -31,6 +36,28 @@ const output = van.derive(() => {
   return decoding.val ? api.decode(input.val) : api.encode(input.val, level.val, random.val ? seed.val : 0);
 });
 const score = van.derive(() => (ready.val ? window.leet!.detect(input.val) : { ratio: 0, verdict: "", decoded: "" }));
+
+const ANIM_MS = 700;
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+// Replays the decrypting effect on the output panel.
+const animate = () => {
+  if (reducedMotion.matches) return;
+  cancelAnimationFrame(animFrame);
+  animSeed = (animSeed + 1) % 2 ** 31;
+  const start = performance.now();
+  const step = (now: number) => {
+    progress.val = Math.min((now - start) / ANIM_MS, 1);
+    if (progress.val < 1) animFrame = requestAnimationFrame(step);
+  };
+  animFrame = requestAnimationFrame(step);
+};
+
+// Wraps a control's handler so every change replays the animation.
+const act = (fn: () => void) => () => {
+  fn();
+  animate();
+};
 
 const pill = (text: string | (() => string), on: () => boolean, onclick: () => void, disabled: () => boolean = () => false) =>
   button({
@@ -58,9 +85,43 @@ const editor = textarea({
   oninput: (e: Event) => (input.val = (e.target as HTMLTextAreaElement).value),
 });
 
-const swap = () => {
+const swap = act(() => {
   input.val = output.rawVal;
   decoding.val = !decoding.rawVal;
+});
+
+// Share links carry the 1337, never the plain text, and open in decode mode:
+// whoever opens one watches the message decrypt.
+const shareLink = () => {
+  const leetText = decoding.rawVal ? input.rawVal : output.rawVal;
+  return `${location.origin}${location.pathname}#${new URLSearchParams({ d: leetText })}`;
+};
+
+const flash = (msg: string) => {
+  shared.val = msg;
+  setTimeout(() => (shared.val = ""), 1800);
+};
+
+const share = async () => {
+  const url = shareLink();
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+    try {
+      await navigator.share({ title: "A 1337 message for you", url });
+    } catch {
+      // dismissed by the user
+    }
+    return;
+  }
+  await navigator.clipboard.writeText(url);
+  flash("link copied!");
+};
+
+const loadFromHash = () => {
+  const d = new URLSearchParams(location.hash.slice(1)).get("d");
+  if (d === null) return false;
+  input.val = d;
+  decoding.val = true;
+  return true;
 };
 
 const copy = async () => {
@@ -80,13 +141,13 @@ van.add(app,
 
   section({ class: "mb-4 flex flex-wrap items-center gap-3" },
     group(
-      pill("encode", () => !decoding.val, () => (decoding.val = false)),
-      pill("decode", () => decoding.val, () => (decoding.val = true)),
+      pill("encode", () => !decoding.val, act(() => (decoding.val = false))),
+      pill("decode", () => decoding.val, act(() => (decoding.val = true))),
     ),
-    group(...LEVELS.map(l => pill(l, () => level.val === l, () => (level.val = l), () => decoding.val))),
+    group(...LEVELS.map(l => pill(l, () => level.val === l, act(() => (level.val = l)), () => decoding.val))),
     group(
-      pill("random", () => random.val, () => (random.val = !random.val), () => decoding.val),
-      pill("reshuffle", () => false, () => (seed.val = seed.rawVal + 1), () => decoding.val || !random.val),
+      pill("random", () => random.val, act(() => (random.val = !random.val)), () => decoding.val),
+      pill("reshuffle", () => false, act(() => (seed.val = seed.rawVal + 1)), () => decoding.val || !random.val),
     ),
   ),
 
@@ -101,9 +162,11 @@ van.add(app,
         div({ class: "flex gap-1" },
           pill("swap", () => false, swap),
           pill(() => (copied.val ? "copied!" : "copy"), () => copied.val, copy),
+          pill(() => shared.val || "share", () => shared.val !== "", share),
         ),
       ),
-      pre({ class: "flex-1 whitespace-pre-wrap break-all text-lg text-leet" }, () => output.val),
+      pre({ class: "flex-1 whitespace-pre-wrap break-all text-lg text-leet" },
+        () => (progress.val < 1 && ready.val ? window.leet!.frame(output.val, progress.val, animSeed) : output.val)),
     ),
   ),
 
@@ -120,15 +183,21 @@ van.add(app,
   footer({ class: "mt-12 space-y-2 text-sm text-neutral-400" },
     p("Prefer the terminal? Same engine, plus a live TUI:"),
     pre({ class: "overflow-x-auto rounded-lg bg-neutral-900 p-3 text-neutral-200" },
-      code("go install github.com/carlosprados/go-1337/cmd/leet@latest\nleet            # live editor\nleet encode -l basic --random \"leet speak\""),
+      code("go install github.com/carlosprados/go-1337/cmd/leet@latest\nleet            # live editor\nleet encode -l basic --random \"leet speak\"\nleet share \"meet me at the usual place\"   # prints a link like the share button"),
     ),
   ),
 );
 
+loadFromHash();
+addEventListener("hashchange", () => loadFromHash() && animate());
+
 const go = new Go();
 WebAssembly.instantiateStreaming(fetch(app.dataset.wasm!), go.importObject)
   .then(r => {
-    addEventListener("leet-ready", () => (ready.val = true), { once: true });
+    addEventListener("leet-ready", () => {
+      ready.val = true;
+      animate();
+    }, { once: true });
     void go.run(r.instance);
   })
   .catch(err => (failed.val = `could not load WebAssembly: ${err}`));
