@@ -8,6 +8,7 @@ type LeetAPI = {
   decode(text: string): string;
   detect(text: string): Detect;
   frame(text: string, progress: number, seed: number): string;
+  durationMs: number;
 };
 declare const Go: new () => { importObject: WebAssembly.Imports; run(i: WebAssembly.Instance): Promise<void> };
 declare global {
@@ -37,7 +38,6 @@ const output = van.derive(() => {
 });
 const score = van.derive(() => (ready.val ? window.leet!.detect(input.val) : { ratio: 0, verdict: "", decoded: "" }));
 
-const ANIM_MS = 700;
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
 // Replays the decrypting effect on the output panel.
@@ -45,9 +45,10 @@ const animate = () => {
   if (reducedMotion.matches) return;
   cancelAnimationFrame(animFrame);
   animSeed = (animSeed + 1) % 2 ** 31;
+  const duration = window.leet?.durationMs ?? 2000;
   const start = performance.now();
   const step = (now: number) => {
-    progress.val = Math.min((now - start) / ANIM_MS, 1);
+    progress.val = Math.min((now - start) / duration, 1);
     if (progress.val < 1) animFrame = requestAnimationFrame(step);
   };
   animFrame = requestAnimationFrame(step);

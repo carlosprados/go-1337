@@ -72,7 +72,7 @@ func TestTogglesPlayTheAnimation(t *testing.T) {
 		t.Error("view shows the final output while animating")
 	}
 
-	m.animStart = time.Now().Add(-time.Second) // let it finish
+	m.animStart = time.Now().Add(-time.Minute) // let it finish
 	next, cmd = m.Update(animTickMsg{})
 	m = next.(Model)
 	if cmd != nil || m.animProgress() != 1 {

@@ -51,3 +51,11 @@ func TestFrameScramblesBeforeTheEnd(t *testing.T) {
 		t.Error("frames do not change over time")
 	}
 }
+
+func TestNothingLocksDuringTheOpening(t *testing.T) {
+	for _, c := range Cells("hack the planet", scrambleOnly-0.01, 9) {
+		if c.Locked && c.R != ' ' {
+			t.Fatalf("%q locked before the scramble-only phase ended", c.R)
+		}
+	}
+}
