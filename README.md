@@ -50,6 +50,7 @@ Archives include shell completions; `leet completion --help` generates them too.
 | `leet decode [text...]` | `from`, `from1337` | 1337 → plain text |
 | `leet detect [text...]` | `score` | How much of a text is 1337, and its decoded form |
 | `leet table` | `map`, `alphabet` | Every letter, its level, primary variant and alternatives |
+| `leet share [text...]` | | Print a web link that decrypts your message on screen |
 | `leet tui` | `live`, `play` | Live editor, explicitly |
 | `leet completion <shell>` | | Completion script for bash, zsh, fish, powershell |
 
@@ -76,7 +77,13 @@ score    46% (mostly 1337)
 decoded  hack the planet
 
 $ leet encode -c "goes to the clipboard too"
+
+$ leet decode --animate '|*455\/\/0|2|) 4<<3|*73|)'   # hacker-movie reveal
+password accepted
 ```
+
+`--animate` (`-a`) on `encode` and `decode` scrambles each line and settles it left to
+right. It only plays when stdout is a terminal, so pipes always get plain text.
 
 Quote leet input in the shell: many sequences contain `\ | < > * $`.
 
@@ -94,6 +101,7 @@ picks from. `leet table` shows them all.
 ### Live editor
 
 Run `leet` in a terminal. It converts as you type: side by side on wide terminals, stacked on narrow ones.
+Switching mode, level or randomness replays the decrypting animation on the output.
 
 | Key | Action |
 |---|---|
@@ -103,6 +111,19 @@ Run `leet` in a terminal. It converts as you type: side by side on wide terminal
 | `ctrl+s` | reshuffle random variants |
 | `ctrl+y` | copy output to the clipboard |
 | `esc` | quit |
+
+### Share a secret message
+
+`leet share` prints a link to the web demo carrying your message **in 1337**. Whoever
+opens it watches it decrypt in the browser:
+
+```bash
+$ leet share "meet me at the usual place"
+https://carlosprados.github.io/go-1337/#d=%2F%5C%2F%5C337+%2F%5C%2F%5C3+47+7%233+%7C_%7C5%7C_%7C41+%7C%2A14%3C3
+```
+
+The **share** button in the web demo does the same. The link holds only the leet, never the
+plain text, and is decoded with the built-in alphabet (`--map` does not travel with it).
 
 ### Custom alphabet
 
@@ -133,7 +154,8 @@ deterministic and reads any level or random output. On a tie, the primary varian
 ## Web demo
 
 `web/` is a [Hugo](https://gohugo.io) + [VanJS](https://vanjs.org) + Tailwind page that runs
-the same Go converter compiled to WebAssembly (`cmd/wasm`). GitHub Pages publishes it on
+the same Go converter and animation compiled to WebAssembly (`cmd/wasm`). It opens `#d=` share
+links in decode mode, and respects `prefers-reduced-motion`. GitHub Pages publishes it on
 every push to `main`.
 
 ## Development
